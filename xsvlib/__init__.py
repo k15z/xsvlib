@@ -4,6 +4,11 @@ xsv = XSV("example.csv", delimiter=",", has_header=True)
 import csv
 from tqdm import tqdm
 
+def write_xsv(filename, rows, encoding="utf8", delimiter=","):
+    with open(filename, "wt", encoding=encoding) as fout:
+        writer = csv.writer(fout, delimiter=delimiter)
+        writer.writerows(tqdm(rows, filename))
+
 class XSV:
 
     def __init__(self, filename, encoding="utf8", has_header="unknown"):
@@ -21,7 +26,10 @@ class XSV:
         if self._has_header == "unknown":
             self._has_header = sniffer.has_header(preview)
 
-    def __del__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
         self._fin.close()
 
     def _apply(self, row, is_header=False):
